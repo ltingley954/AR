@@ -56,6 +56,8 @@
     </style>
 
     <script>
+      console.log('Script loaded');
+
       // THEME DEFINITIONS
       const THEMES = {
         metallic: {
@@ -93,7 +95,6 @@
         }
       };
 
-      // Keep track of sculptures so we can clear them
       const parkEntities = [];
 
       function randomFrom(arr) {
@@ -153,15 +154,12 @@
         const root = document.createElement('a-entity');
         root.setAttribute('position', position);
 
-        // Main art form
         const art = document.createElement('a-entity');
         art.setAttribute('geometry', randomGeometry());
         art.setAttribute('material', makeMaterial(themeKey));
 
-        // Random rotation animation
         const ySpin = 2400 + Math.random() * 6000;
         const xTilt = Math.random() > 0.5 ? '360 0 0' : '0 360 360';
-
         art.setAttribute('animation__spin', {
           property: 'rotation',
           to: xTilt,
@@ -170,42 +168,21 @@
           easing: 'linear'
         });
 
-        // Pedestal
         const pedestal = document.createElement('a-cylinder');
         pedestal.setAttribute('radius', 0.5);
         pedestal.setAttribute('height', 0.2);
         pedestal.setAttribute('position', '0 -0.7 0');
         pedestal.setAttribute('material', 'color: #333; metalness: 0.2; roughness: 0.9');
 
-        // Optional halo ring above
-        const halo = document.createElement('a-torus');
-        halo.setAttribute('radius', 0.9);
-        halo.setAttribute('radius-tubular', 0.03);
-        halo.setAttribute('position', '0 1.0 0');
-        halo.setAttribute('material', {
-          color: '#ffffff',
-          metalness: 0.9,
-          roughness: 0.1,
-          emissive: '#ffffff',
-          emissiveIntensity: 0.4
-        });
-        halo.setAttribute('animation__halo', {
-          property: 'rotation',
-          to: '0 360 0',
-          loop: true,
-          dur: 12000,
-          easing: 'linear'
-        });
-
         root.appendChild(art);
         root.appendChild(pedestal);
-        root.appendChild(halo);
 
         sceneEl.appendChild(root);
         parkEntities.push(root);
       }
 
       function clearPark(sceneEl) {
+        console.log('Clearing park, sculptures:', parkEntities.length);
         parkEntities.forEach(ent => {
           if (ent.parentNode === sceneEl) {
             sceneEl.removeChild(ent);
@@ -217,7 +194,8 @@
       function generateArtPark(themeKey) {
         const sceneEl = document.querySelector('a-scene');
         if (!sceneEl || !sceneEl.camera) {
-          alert('Enter AR first, then tap Generate Park.');
+          alert('Enter AR first (tap AR button), then tap Generate Park.');
+          console.warn('Scene or camera not ready');
           return;
         }
 
@@ -226,12 +204,12 @@
         const camera = sceneEl.camera;
         const playerPos = new THREE.Vector3();
         camera.getWorldPosition(playerPos);
+        console.log('Player position for park center:', playerPos);
 
-        // CONFIG: big field feel
-        const numClusters = 6;            // number of themed "sets"
-        const sculpturesPerCluster = 4;   // per set
-        const minRadius = 5;             // meters from center
-        const maxRadius = 20;            // meters from center
+        const numClusters = 6;
+        const sculpturesPerCluster = 4;
+        const minRadius = 5;
+        const maxRadius = 20;
 
         for (let i = 0; i < numClusters; i++) {
           const angle = (Math.PI * 2 * i) / numClusters + Math.random() * 0.4;
@@ -249,26 +227,26 @@
 
             const pos = new THREE.Vector3(
               clusterCenter.x + Math.cos(offsetAngle) * offsetRadius,
-              playerPos.y + (Math.random() * 0.5 - 0.1), // small height variation
+              playerPos.y,
               clusterCenter.z + Math.sin(offsetAngle) * offsetRadius
             );
 
-            // Keep sculptures near ground
-            pos.y = Math.max(0.0, pos.y);
+            pos.y = Math.max(0.0, pos.y); // keep near ground
 
             createSculpture(themeKey, pos, sceneEl);
           }
         }
       }
 
-      // Hook up UI when DOM is ready
       document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM ready');
         const themeSelect = document.getElementById('themeSelect');
         const generateBtn = document.getElementById('generateBtn');
         const clearBtn = document.getElementById('clearBtn');
 
         generateBtn.addEventListener('click', () => {
           const theme = themeSelect.value;
+          console.log('Generate park with theme:', theme);
           generateArtPark(theme);
         });
 
@@ -294,7 +272,7 @@
       <button id="clearBtn">Clear Park</button>
     </div>
     <div id="hint">
-      Enter AR, then tap "Generate Park". Walk the field to discover each set.
+      On your phone: tap the AR button to enter AR, then tap "Generate Park". Walk the field to explore.
     </div>
 
     <a-scene
@@ -308,7 +286,7 @@
       <!-- Camera -->
       <a-entity camera look-controls position="0 1.6 0"></a-entity>
 
-      <!-- Lighting to make it pop -->
+      <!-- Lights -->
       <a-entity light="type: directional; intensity: 1.0" position="2 4 1"></a-entity>
       <a-entity light="type: directional; intensity: 0.5" position="-2 2 -3"></a-entity>
       <a-entity light="type: ambient; intensity: 0.6"></a-entity>
