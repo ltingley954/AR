@@ -56,8 +56,6 @@
     </style>
 
     <script>
-      console.log('Script loaded');
-
       // THEME DEFINITIONS
       const THEMES = {
         metallic: {
@@ -158,7 +156,7 @@
         art.setAttribute('geometry', randomGeometry());
         art.setAttribute('material', makeMaterial(themeKey));
 
-        const ySpin = 2400 + Math.random() * 6000;
+        const ySpin = 4000 + Math.random() * 6000;
         const xTilt = Math.random() > 0.5 ? '360 0 0' : '0 360 360';
         art.setAttribute('animation__spin', {
           property: 'rotation',
@@ -182,7 +180,6 @@
       }
 
       function clearPark(sceneEl) {
-        console.log('Clearing park, sculptures:', parkEntities.length);
         parkEntities.forEach(ent => {
           if (ent.parentNode === sceneEl) {
             sceneEl.removeChild(ent);
@@ -194,8 +191,7 @@
       function generateArtPark(themeKey) {
         const sceneEl = document.querySelector('a-scene');
         if (!sceneEl || !sceneEl.camera) {
-          alert('Enter AR first (tap AR button), then tap Generate Park.');
-          console.warn('Scene or camera not ready');
+          alert('Enter AR first (tap the goggles/AR button), then tap Generate Park.');
           return;
         }
 
@@ -204,7 +200,6 @@
         const camera = sceneEl.camera;
         const playerPos = new THREE.Vector3();
         camera.getWorldPosition(playerPos);
-        console.log('Player position for park center:', playerPos);
 
         const numClusters = 6;
         const sculpturesPerCluster = 4;
@@ -231,22 +226,19 @@
               clusterCenter.z + Math.sin(offsetAngle) * offsetRadius
             );
 
-            pos.y = Math.max(0.0, pos.y); // keep near ground
-
+            pos.y = Math.max(0.0, pos.y); // stay on ground-ish
             createSculpture(themeKey, pos, sceneEl);
           }
         }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOM ready');
         const themeSelect = document.getElementById('themeSelect');
         const generateBtn = document.getElementById('generateBtn');
         const clearBtn = document.getElementById('clearBtn');
 
         generateBtn.addEventListener('click', () => {
           const theme = themeSelect.value;
-          console.log('Generate park with theme:', theme);
           generateArtPark(theme);
         });
 
@@ -272,16 +264,13 @@
       <button id="clearBtn">Clear Park</button>
     </div>
     <div id="hint">
-      On your phone: tap the AR button to enter AR, then tap "Generate Park". Walk the field to explore.
+      On your phone: tap the XR/VR goggles button to enter AR, then tap "Generate Park" and walk the field.
     </div>
 
     <a-scene
-      webxr="optionalFeatures: hit-test, local-floor;"
+      webxr="optionalFeatures: local-floor;"
       xr-mode-ui="enabled: true"
-      embedded
-      vr-mode-ui="enabled: false"
       renderer="antialias: true; colorManagement: true;"
-      device-orientation-permission-ui="enabled: true"
     >
       <!-- Camera -->
       <a-entity camera look-controls position="0 1.6 0"></a-entity>
